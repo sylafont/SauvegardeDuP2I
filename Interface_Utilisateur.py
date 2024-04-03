@@ -14,10 +14,12 @@ from PlotStatModule import plotGraph, plotPie
 import numpy as np
 from ImageModule import imageUploader, ProcessMnistImageForDisplay, LoadButtonWithImage
 import os
+from AccesBaseDeDonnes import Save_Data_Base, IsInFolder
 
 
 class Interface():
-    def __init__(self) :
+    def __init__(self, db) :
+        self.db = db
         self.fenetre = tkinter.Tk()
         self.fenetre.geometry("400x500")
         self.fenetre.resizable(False, False)
@@ -337,6 +339,9 @@ class Interface():
             LabelPredict.grid(row=int(i/3)+1, column=i%3, sticky="nw", pady=50, padx=70)
             VraiLabel.grid(row=int(i/3)+1, column=i%3, sticky="ne", pady=50, padx=70)
             
+db = "mnist_data_base"
+if not IsInFolder(db):
+    Save_Data_Base(db)
 
-I1 = Interface()
+I1 = Interface(db)
 I1.fenetre.mainloop()

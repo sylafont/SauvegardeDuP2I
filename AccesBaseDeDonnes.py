@@ -2,6 +2,7 @@ from keras.datasets import mnist
 import matplotlib.pyplot as plt
 import numpy as np
 from dependency import pickle
+import os
 
 """Sauvegarder la variable load_data avec pickle"""
 
@@ -27,21 +28,28 @@ def Load_Data():
   X_test /= 255
   return X_train, y_train, X_test, y_test
 
-def Save_Data_Base():
+def Save_Data_Base(dataBaseName):
   X_train, y_train, X_test, y_test = Load_Data()
   try:
-    with open("mnist_data_base.pickle", "wb") as f:
+    with open("DataBase/"+ dataBaseName+ ".pickle", "wb") as f:
       pickle.dump((X_train, y_train, X_test, y_test), f, protocol=pickle.HIGHEST_PROTOCOL)#Warning with highest protocol peut être incompatible avec certaines version de python
   except Exception as ex:
     print("Error during pickling object (Possibly unsupported):", ex)
 
  
-def Load_Data_From_Pickle() :
+def Load_Data_From_Pickle(dataBaseName) :
   try:
-    with open("mnist_data_base.pickle", "rb") as f:
+    with open("DataBase/"+ dataBaseName+ ".pickle", "rb") as f:
       return pickle.load(f)
   except Exception as ex:
     print("Error during unpickling object (Possibly unsupported):", ex)
+
+def IsInFolder(dataBaseName):
+  for path, subdirs, files in os.walk("DataBase"):
+    for name in files:
+        if name == dataBaseName:
+            return True
+  return False
 
 
 

@@ -16,7 +16,7 @@ class reseau() :
         self.nb_couches = len(liste_neurone_par_couche)
         self.liste_neurone_par_couche = liste_neurone_par_couche.copy()
         self.initialisation_Matrice_Poids()
-        self.data_image_pool, self.label_pool, self.image_test, self.label_test = Load_Data_From_Pickle()
+        self.data_image_pool, self.label_pool, self.image_test, self.label_test = Load_Data_From_Pickle(interface.db)
         self.index_image_and_label = np.arange(60000)#intitialisation d'une liste qu'on va shuffle
         np.random.shuffle(self.index_image_and_label)#peut être à changer de place
         #Mettre un self.index_mauvaise_predic
