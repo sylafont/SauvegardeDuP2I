@@ -44,13 +44,9 @@ def Load_Data_From_Pickle(dataBaseName) :
   except Exception as ex:
     print("Error during unpickling object (Possibly unsupported):", ex)
 
-def IsInFolder(dataBaseName):
-  for path, subdirs, files in os.walk("DataBase"):
+def IsInFolder(fileName, folderName):
+  for path, subdirs, files in os.walk(folderName):
     for name in files:
-        if name == dataBaseName:
+        if name == fileName:
             return True
   return False
-
-
-
-

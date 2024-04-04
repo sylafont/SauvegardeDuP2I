@@ -34,22 +34,24 @@ class Interface():
         if not hasattr(self, "network"):
             choix1 = LoadButtonWithImage(self.fenetre, "BoutonEntrainement.png", 132, 262 , self.bg_color)
             choix1.config(command =  self.NetworkSpecificationPage)
-            choix2 = LoadButtonWithImage(self.fenetre,"BoutonLoad.png", 132, 262, self.bg_color)
-            choix2.config(command =self.ChoseNetworkPopUp)
+            if len(self.GetPreviousNetworks())!=0 :
+                choix2 = LoadButtonWithImage(self.fenetre,"BoutonLoad.png", 132, 262, self.bg_color)
+                choix2.config(command =self.ChoseNetworkPopUp)
+                choix2.grid(row = 2, column=0, sticky = "n", pady=(0,10))
         else :
-            #choix1 = tkinter.Button(self.fenetre, text = "Aller voir les statistiques", command = self.MenuStatPage, padx = 60, pady = 60, bg = "green")
             choix1 =LoadButtonWithImage(self.fenetre, "BoutonFonctionnalite.png", 132, 262, self.bg_color)
             choix1.config(command = self.MenuStatPage)
             choix2 = LoadButtonWithImage(self.fenetre, "BoutonEntrainement.png", 132, 262, self.bg_color)
             choix2.config(command =  self.CheckIfUserWantToProceed)
-            choix3 = LoadButtonWithImage(self.fenetre, "BoutonLoad.png", 132, 262, self.bg_color)
-            choix3.config(command =self.ChoseNetworkPopUp)
-            choix3.grid(row = 3, column=0, sticky = "n")
+            choix2.grid(row = 2, column=0, sticky = "n", pady=(0,10))
+            if len(self.GetPreviousNetworks())!=0 :
+                choix3 = LoadButtonWithImage(self.fenetre, "BoutonLoad.png", 132, 262, self.bg_color)
+                choix3.config(command =self.ChoseNetworkPopUp)
+                choix3.grid(row = 3, column=0, sticky = "n")
         
         self.fenetre.columnconfigure(0, weight =1)
         titre.grid(row = 0, column=0, sticky = "n", pady=10 )
         choix1.grid(row = 1, column=0, sticky = "n", pady=(0,10))
-        choix2.grid(row = 2, column=0, sticky = "n", pady=(0,10))
         
     def DisplayProgressionBar(self, nb_epoch, nb_total):
         progression = round((nb_epoch/nb_total)*10)
@@ -65,7 +67,14 @@ class Interface():
             proceed = tkinter.messagebox.askokcancel(title=None, message=msg)
         if proceed  == True :
             self.NetworkSpecificationPage()
-        
+
+    def GetPreviousNetworks(self):
+        for path, subdirs, files in os.walk("Networks"):
+            networkName=[]
+            for name in files:
+                if ".pickle" in name :
+                    networkName.append(name.replace(".pickle", ""))
+        return networkName
             
     def ChoseNetworkPopUp(self):
         self.fenetre.attributes('-disabled', True)
@@ -76,11 +85,7 @@ class Interface():
         title = "Choississez le réseau à charger"
         titleLabel = tkinter.Label(popUp, text = title, bg="orange")
         titleLabel.pack(side ='top', pady=20)
-        for path, subdirs, files in os.walk("Networks"):
-            networkName=[]
-            for name in files:
-                if ".pickle" in name :
-                    networkName.append(name.replace(".pickle", ""))
+        networkName = self.GetPreviousNetworks()
         tkVarS = tkinter.StringVar(popUp)
         tkVarS.set(networkName[0])
         userEntry = tkinter.OptionMenu(popUp, tkVarS, *networkName)
@@ -157,7 +162,6 @@ class Interface():
             buttonSauvegarde.config(command = self.FenetrePopUpSauvegarde)
             buttonSauvegarde.grid(row = 0, column = n_column, sticky = "e", padx=30)
             
-        
     def NetworkSpecificationPage(self):
         self.reseauASauvegarder= False
         self.clearPreviousPage(400,540,0)
@@ -340,7 +344,7 @@ class Interface():
             VraiLabel.grid(row=int(i/3)+1, column=i%3, sticky="ne", pady=50, padx=70)
             
 db = "mnist_data_base"
-if not IsInFolder(db):
+if not IsInFolder(db, "DataBase"):
     Save_Data_Base(db)
 
 I1 = Interface(db)

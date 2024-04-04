@@ -38,13 +38,10 @@ class reseau() :
         
     
     def Index_Images_For_New_Batch(self) :
-        #self.a = []
-        #self.z = []
         self.label_batch = []
     
         #Le nombre n dépend du nombre d'image par batch
         nb_neurone_premiere_couche = self.liste_neurone_par_couche[0]
-        #a0 = np.ones((nb_neurone_premiere_couche, self.nb_batch ))
         images = np.ones((nb_neurone_premiere_couche, self.nb_batch ))
         s=0
         
@@ -53,14 +50,10 @@ class reseau() :
             image = self.data_image_pool[index, :]
             label = self.label_pool[index]
             images[:,s] = image
-            #a0[: ,s] = image
             s= s+1
             self.label_batch.append(label)
             
-        #self.Feed_InputLayer(images)
         return images
-        #print("shape label : ", np.shape(label))
-        #self.a.append(a0)
     
     def Feed_InputLayer(self, images) :
         self.a = []
@@ -92,7 +85,6 @@ class reseau() :
             raise ValueError("La fonction d'activation rentrée n'est pas valide")
 
     def derive_Cout(self, activation_ouput_layer):
-        #activation_ouput_layer = self.a[self.nb_couches -1]
         if self.loss_type == "least_squares" :
             self.derive_cout_activation = (activation_ouput_layer - self.y_real)
         else :
@@ -121,7 +113,6 @@ class reseau() :
         for i in range(self.nb_batch) :    #feed input neurone
             image, label = Get_image_And_Label(i)
             a0[: ,i] = image
-        #print("shape label : ", np.shape(label))
         self.a.append(a0)
 
 
@@ -130,8 +121,6 @@ class reseau() :
         self.Feed_InputLayer(input)
 
         for i in range(self.nb_couches-1) :
-            #print("i : ", i)
-            #print("len a  : ", np.shape(self.a[i]), "len w :", np.shape(self.w[i]), "len b ", np.shape(self.b[i]))
             new_z = (np.matmul(self.w[i], self.a[i]) + self.b[i])
         
             self.z.append(new_z)
@@ -159,13 +148,11 @@ class reseau() :
             self.y_real[index_label, i ] = 1
     
     def Compute_Loss_Function(self): 
-        #print("shape y real : ", np.shape(self.y_real), "shape y_predicted : ", np.shape(self.a[self.nb_couches-1]))
         y_predicted = self.a[self.nb_couches-1]
 
         if self.loss_type == "least_squares" :
             diff_matrices = (self.y_real - y_predicted)**2
             self.cost = np.sum(diff_matrices, axis =0)/2
-            #self.cost = np.mean(self.cost)
             return np.mean(self.cost)
         else :
             raise ValueError("La fonction de cout rentrée n'est pas valide")
@@ -180,20 +167,12 @@ class reseau() :
         
         """VERIFIER SI CETTE BOUCLE FAIT BIEN TOUTES LES ITERATIONS"""
         for i in range(self.nb_couches-2, 0, -1):#On met -1 car ca va s'arrêter à 0
-            #print("shape w ",i, " : ", np.shape(self.w[i]))
-            #print("shape delta ",i+1, " : ", np.shape(self.deltas[i+1]))
-            #print("shape biais ",i, " : ", np.shape(self.b[i]))
-            #print("shape dervé Z ",i, " : ", np.shape(self.derive_Z[i]))
             delta = np.matmul(self.w[i].T,self.deltas[i+1])*self.derive_Z[i]
             self.deltas[i] = delta
-            #print("shape delta ",i, " : ", np.shape(delta))
-            #print("shape activation ",i, " : ", np.shape(self.a[i]))
 
     def Change_Biais_and_Weights(self):
         for i in range(self.nb_couches-1) :
             gradient_bais = np.mean(self.deltas[i+1], axis =1, keepdims= True)
-            #print("Shape b :  ", np.shape(self.b[i]))
-            #print("Shape self.lnr*gradient_bais :  ", np.shape(self.lnr*gradient_bais))
             self.b[i] = self.b[i] - self.lnr*gradient_bais
             new_shape_a = np.reshape(self.a[i], (1, np.shape(self.a[i])[0], np.shape(self.a[i])[1]))
             new_shape_delta = np.reshape(self.deltas[i+1], (np.shape(self.deltas[i+1])[0],1, np.shape(self.deltas[i+1])[1]))
@@ -203,9 +182,6 @@ class reseau() :
 
     
     def Train_network(self):
-        
-        #self.Test_Network(self.data_image_pool.T, self.train_nb_correct, self.label_pool) #pour avoir l'epoch 0
-        #self.Test_Network(self.image_test.T, self.test_nb_correct, self.label_test)
        
         for j in range(self.nb_epoch) :
             print("Epoch : ", j+1)
@@ -224,17 +200,12 @@ class reseau() :
                     self.Test_Network(self.data_image_pool.T, self.train_nb_correct, self.label_pool)
                     self.Test_Network(self.image_test.T, self.test_nb_correct, self.label_test)
             print("Cout de la fonction : ", np.mean(self.costs))
-            #self.Test_Network(self.data_image_pool.T, self.train_nb_correct, self.label_pool)
-            #self.Test_Network(self.image_test.T, self.test_nb_correct, self.label_test)
         self.ComputeIndEchec()
 
     def Test_Network(self, array_image, liste_score_par_epochs, labels) :
         activation_ouput_layer = self.forward(array_image)
         self.predic_test_set = np.argmax(activation_ouput_layer, axis =0)
         nb_correct = self.predic_test_set == labels
-        #print("nb_corrct: ", nb_correct)
-        #print("predict test set : ",len(self.predic_test_set))
-        #print("label_test : ",len(self.label_test))
         pourcentage_correct = ((np.sum(nb_correct))/len(nb_correct))*100
         liste_score_par_epochs.append(pourcentage_correct)
         print("Le taux de prediction correcte est de : ", pourcentage_correct, "%")
@@ -245,12 +216,7 @@ class reseau() :
         self.prediction = np.argmax(prediction, axis =0)
         self.ind_echec = np.where(self.prediction != self.label_test)
         
-    def Retrieve_Error_After_Training(self) :
-        """prediction = self.a[self.nb_couches-1]
-        self.prediction = np.argmax(prediction, axis =0)
-        self.ind_echec = np.where(self.prediction != self.label_test)"""
-        #self.labelEnEchec = self.label_test[ind_echec]
-        #self.predictionEnEchec = self.prediction[ind_echec]
+    def Retrieve_Error_After_Training(self) : 
         labelNumbers =[]
         occurences =[]
         for i in range(10):
@@ -258,16 +224,14 @@ class reseau() :
             counter = Counter(falsePredictionForiNumber) #Renvoie un dictionnaire avec les occurences de chaque valeur
             number = list(counter.keys())
             occurence = list(counter.values())
-            #print("number " ,number)
-            #print("occurence ", occurence)
             labelNumbers.append(number)
             occurences.append(occurence)
         return labelNumbers, occurences
         
-        for i in range(20) :
+        """for i in range(20) :
             print("Vrai chiffre : ", label_echec[i])
             print("Prediction : ", prevision_echec[i])
-        #joblib.dump(label_echec, "label_echec.pkl")
+        #joblib.dump(label_echec, "label_echec.pkl")"""
      
     def ToString(self):
         text = "Réseau composé de " + str(self.nb_couches) +" couches \n dont "
