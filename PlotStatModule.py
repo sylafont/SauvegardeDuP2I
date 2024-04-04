@@ -50,8 +50,10 @@ def plotPie(root, titre, labels, sizes, color):
 def IncorporateInTkWindow(root, fig, color):
     fig.set_facecolor(color)
     canvas = FigureCanvasTkAgg(fig, root )
-    canvas.draw()
-    return fig, canvas.get_tk_widget()
+    #canvas.draw()
+    figCanvas = canvas.get_tk_widget()
+    figCanvas.config(width = 430, height=350)
+    return fig, figCanvas
 
 
     
