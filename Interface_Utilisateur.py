@@ -17,7 +17,7 @@ import os
 from AccesBaseDeDonnes import Save_Data_Base, IsInFolder
 
 
-class Interface():
+class Interface(): 
     def __init__(self, db) :
         self.db = db
         self.fenetre = tkinter.Tk()

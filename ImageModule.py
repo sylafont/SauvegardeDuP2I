@@ -32,7 +32,7 @@ def imageUploader(app):
 
         pic = ImageTk.PhotoImage(img)
         
-        app.geometry("580x300")
+        app.geometry("560x320")
         label = Label(app, image=pic)
         label.config(image=pic)
         label.image = pic

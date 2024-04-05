@@ -7,26 +7,23 @@ from collections import Counter
 class reseau() :
     """Réflechir à passer certaines variables en local"""
     def __init__(self, nb_epoch, liste_neurone_par_couche,lnr,  activation_type, loss_type, interface):
-        
         self.lnr = lnr #Learning rate
         self.activation_type, self.loss_type = self.test_type(activation_type, loss_type)
-        self.nb_batch = 10
-        self.nb_epoch = nb_epoch
-        self.iteration_batch = 0
+        self.nb_batch = 10 #Nombre d'images par batch
+        self.nb_epoch = nb_epoch 
+        self.iteration_batch = 0 #compteur du nombre de batch déjà réalisé dans une époch, lors de l'entrainement
         self.nb_couches = len(liste_neurone_par_couche)
-        self.liste_neurone_par_couche = liste_neurone_par_couche.copy()
+        self.liste_neurone_par_couche = liste_neurone_par_couche.copy()#Liste qui va contenir l'architecture du réseau : le nombre de neurones sur chaque couches
         self.initialisation_Matrice_Poids()
-        self.data_image_pool, self.label_pool, self.image_test, self.label_test = Load_Data_From_Pickle(interface.db)
-        self.index_image_and_label = np.arange(60000)#intitialisation d'une liste qu'on va shuffle
-        np.random.shuffle(self.index_image_and_label)#peut être à changer de place
-        #Mettre un self.index_mauvaise_predic
-        self.train_nb_correct = [] #Pourcentage de prédiction correcte pour chaque epochs (sur le training set)
-        self.test_nb_correct = [] ##Pourcentage de prédiction correcte pour chaque epochs (sur le test set)
-        self.predic_test_set = []
+        self.train_image, self.train_label, self.image_test, self.label_test = Load_Data_From_Pickle(interface.db)#On rentre le nom de la base de données
+        self.index_image_and_label = np.arange(60000)#inititialisation d'une liste qu'on va mélanger avant chaque epoch pour connaitre la répartition des images dans chaque batch (répartition aléatoire)
+        #np.random.shuffle(self.index_image_and_label)
+        self.train_nb_correct = [] #Pourcentage de prédictions correctes pour chaque epoch (sur le jeu d'entraînement)
+        self.test_nb_correct = [] ##Pourcentage de prédictions correctes pour chaque epoch (sur le jeu de test)
+        self.predic_set = [] #Liste qui va prendre toutes les prédictions du réseau après une session de test des résultats sur le jeu de test ou d'entrainement
         self.ind_echec = []
-        #toutes les images et labels de la base de données MNIST dont on enlève progressivement certaines quand elles ont été vues
-        #remis à jour à chaque epochs
-        self.interface = interface
+        self.interface = interface #Il est nécessaire d'avoir un attribut interface de la classe interface utilisateur
+        #pour que le réseau puisse communiquer à l'interface sur le déroulé de l'entraînement et ainsi permettre l'affichage de la barre de progression
 
     def test_type(self, activation, loss) :
         """Fonction qui vérifie que l'utilisateur a rentré une chaine de caractère valide pour la fonction d'activation et de cout"""
@@ -37,18 +34,18 @@ class reseau() :
             return activation, loss
         
     
-    def Index_Images_For_New_Batch(self) :
+    def Index_Images_For_New_Batch(self ) :
+        """Fonction qui va récupérer les images qui doivent être ajoutées au nouveau batch d'entraînement"""
         self.label_batch = []
-    
         #Le nombre n dépend du nombre d'image par batch
         nb_neurone_premiere_couche = self.liste_neurone_par_couche[0]
         images = np.ones((nb_neurone_premiere_couche, self.nb_batch ))
         s=0
         
-        for i in range(self.iteration_batch*self.nb_batch, self.iteration_batch*self.nb_batch + self.nb_batch) :#a voir si je peux pas plutot del les index des images déjà utilisées en partant du dernier item de la liste
+        for i in range(self.iteration_batch*self.nb_batch, self.iteration_batch*self.nb_batch + self.nb_batch) : 
             index = self.index_image_and_label[i]
-            image = self.data_image_pool[index, :]
-            label = self.label_pool[index]
+            image = self.train_image[index, :]
+            label = self.train_label[index]
             images[:,s] = image
             s= s+1
             self.label_batch.append(label)
@@ -197,15 +194,15 @@ class reseau() :
                 self.iteration_batch=self.iteration_batch+1
                 if (j*6000 + (i+1))%(600*self.nb_epoch) == 0:
                     self.interface.DisplayProgressionBar(j*6000 + (i+1),600*self.nb_epoch)
-                    self.Test_Network(self.data_image_pool.T, self.train_nb_correct, self.label_pool)
+                    self.Test_Network(self.train_image.T, self.train_nb_correct, self.train_label)
                     self.Test_Network(self.image_test.T, self.test_nb_correct, self.label_test)
             print("Cout de la fonction : ", np.mean(self.costs))
         self.ComputeIndEchec()
 
     def Test_Network(self, array_image, liste_score_par_epochs, labels) :
         activation_ouput_layer = self.forward(array_image)
-        self.predic_test_set = np.argmax(activation_ouput_layer, axis =0)
-        nb_correct = self.predic_test_set == labels
+        self.predic_set = np.argmax(activation_ouput_layer, axis =0)
+        nb_correct = self.predic_set == labels
         pourcentage_correct = ((np.sum(nb_correct))/len(nb_correct))*100
         liste_score_par_epochs.append(pourcentage_correct)
         print("Le taux de prediction correcte est de : ", pourcentage_correct, "%")
