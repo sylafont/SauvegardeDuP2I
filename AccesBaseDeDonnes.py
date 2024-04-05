@@ -4,17 +4,6 @@ import numpy as np
 from dependency import pickle
 import os
 
-"""Sauvegarder la variable load_data avec pickle"""
-
-""""def Get_image_And_Label(nb_image, i):
-  Fonction à changer pour récupérer des images de manières aléatoire
-  X_train, label, X_test, label_test = Load_Data_From_Pickle()
-  return X_train[i], label[i]"""
-
-
-"""def Get_proportion0():
-  X0 = Load_Data()
-  return np.mean(X0)"""
 
 def Load_Data():
   (X_train, y_train), (X_test, y_test) = mnist.load_data()

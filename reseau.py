@@ -56,12 +56,6 @@ class reseau() :
         self.z = [] #Initialisation d'une liste contenant les sorties brutes des neurones (la somme pondéré de toutes les activations des neurones précédents)
         self.a.append(images)
 
-    """def Test_Input_PerBatch(self):
-        for i in range(self.nb_batch):
-            print("label : ", self.label_batch[i])
-            plt.figure()
-            plt.imshow(self.a[0][:,i].reshape([28,28]), cmap='gray')
-            plt.show()"""
 
     def activation(self, num):
         """Fonction à compléter au fur et à mesure que d'autres fonctions d'activations sont rajoutées"""
@@ -100,15 +94,6 @@ class reseau() :
             for i in range(0, nb_neurone_couche_suivante ) : 
                 w0[i,:]= np.random.uniform(low=-1.0, high=1.0, size=nb_neurone_cette_couche)
             self.w.append(w0)
-
-    """"def feedInput(self) :
-    
-        nb_neurone_premiere_couche = self.liste_neurone_par_couche[0]
-        a0 = np.ones((nb_neurone_premiere_couche, self.nb_batch ))
-        for i in range(self.nb_batch) :    #feed input neurone
-            image, label = Get_image_And_Label(i)
-            a0[: ,i] = image
-        self.a.append(a0)"""
 
 
     def forward(self, input) :
@@ -231,10 +216,6 @@ class reseau() :
             occurences.append(occurence)
         return labelNumbers, occurences
         
-        """for i in range(20) :
-            print("Vrai chiffre : ", label_echec[i])
-            print("Prediction : ", prevision_echec[i])
-        #joblib.dump(label_echec, "label_echec.pkl")"""
      
     def ToString(self):
         """Fonction destinée à afficher les informations spécifiques au réseau"""
@@ -275,15 +256,3 @@ class reseau() :
         except Exception as ex :
             print("Error during unpickling object (Possibly unsupported) : ", ex)
 
-   
-
-#network = reseau(10, [784,30, 10] , "sigmoid", "least_squares")
-#network.Train_network()
-#network.forward()
-#print("Activation output layer : ")
-#print(network.a[2])
-
-#DecisionSauvegarde = input("Voulez-vous sauvegarder ce réseau ? O/N")
-
-#if (DecisionSauvegarde == 'O'):
-    #network.Save_Network()
