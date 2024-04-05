@@ -19,9 +19,9 @@ from AccesBaseDeDonnes import Save_Data_Base, IsInFolder
 
 class Interface(): 
     def __init__(self, db) :
-        self.db = db
+        self.db = db #Nom de la base de donnée
         self.fenetre = tkinter.Tk()
-        self.fenetre.geometry("400x500")
+        self.fenetre.geometry("400x500") #On empêche la fenêtre de se redimensionner pour être sur que les widgets se placent bien
         self.fenetre.resizable(False, False)
         self.reseauASauvegarder = False
         self.bg_color = '#F9DDAD'
@@ -31,14 +31,14 @@ class Interface():
         self.clearPreviousPage(400,500,0,)
         titre = tkinter.Label(self.fenetre, text = "Accueil", bg = "orange")
         
-        if not hasattr(self, "network"):
+        if not hasattr(self, "network"): #Si l'utilisateur n'as pas encore choisit d'entraîner ou de charger un réseau
             choix1 = LoadButtonWithImage(self.fenetre, "BoutonEntrainement.png", 132, 262 , self.bg_color)
-            choix1.config(command =  self.NetworkSpecificationPage)
-            if len(self.GetPreviousNetworks())!=0 :
-                choix2 = LoadButtonWithImage(self.fenetre,"BoutonLoad.png", 132, 262, self.bg_color)
+            choix1.config(command =  self.NetworkSpecificationPage)#Renvoie vers la page formulaire pour entraîner le réseau
+            if len(self.GetPreviousNetworks())!=0 : #S'il n'y a au moins un reseau sauvegardé dans le dossier Networks
+                choix2 = LoadButtonWithImage(self.fenetre,"BoutonLoad.png", 132, 262, self.bg_color)#On propose à l'utilisateur de pouvoir charger un réseau
                 choix2.config(command =self.ChoseNetworkPopUp)
                 choix2.grid(row = 2, column=0, sticky = "n", pady=(0,10))
-        else :
+        else : #L'utilisateur a déjà chargé ou entraîné un réseau
             choix1 =LoadButtonWithImage(self.fenetre, "BoutonFonctionnalite.png", 132, 262, self.bg_color)
             choix1.config(command = self.MenuStatPage)
             choix2 = LoadButtonWithImage(self.fenetre, "BoutonEntrainement.png", 132, 262, self.bg_color)
@@ -54,13 +54,15 @@ class Interface():
         choix1.grid(row = 1, column=0, sticky = "n", pady=(0,10))
         
     def DisplayProgressionBar(self, nb_epoch, nb_total):
+        """Fonction appelée par le réseau au cours de l'entraînement"""
         progression = round((nb_epoch/nb_total)*10)
-        self.pb['value'] =  progression
+        self.pb['value'] =  progression #La valeur de la barre de progression est mise à jour
         label = tkinter.Label(self.barPlusInfo, text = str(progression)+ "%", bg = self.bg_color)
         label.grid(row=1)
-        self.fenetre.update_idletasks()
+        self.fenetre.update_idletasks() #On force la fenêtre à s'actualiser sinon les calculs du réseau seront fait avant l'actualisation de la barre de progression
         
     def CheckIfUserWantToProceed(self):
+        """Fonction qui prévient l'utilisateur qu'il a un réseau non sauvegardé et qu'il risque de le perdre en poursuivant son action"""
         proceed = True
         if self.reseauASauvegarder == True :
             msg = "Vous avez un réseau non sauvegardé, si vous tentez d'en entraîner un autre ces données seront perdues"
@@ -69,6 +71,7 @@ class Interface():
             self.NetworkSpecificationPage()
 
     def GetPreviousNetworks(self):
+        """Fonction qui récupère tous les fichiers dans le dossier Networks, et compile les noms dans une liste"""
         for path, subdirs, files in os.walk("Networks"):
             networkName=[]
             for name in files:
@@ -77,18 +80,19 @@ class Interface():
         return networkName
             
     def ChoseNetworkPopUp(self):
-        self.fenetre.attributes('-disabled', True)
+        """Fonction qui fait apparaitre une popUp pour demander à l'utilisateur quel réseau il souhaite charger"""
+        self.fenetre.attributes('-disabled', True) #On empêche l'utilisateur de pouvoir interargir avec la fenêre tant que la popUp est là
         popUp = tkinter.Toplevel(self.fenetre, bg = self.bg_color)
         popUp.geometry("250x200")
         popUp.resizable(False, False)
-        popUp.protocol("WM_DELETE_WINDOW", partial(self.DestroyPopUpAndEnableWindow, popUp))
+        popUp.protocol("WM_DELETE_WINDOW", partial(self.DestroyPopUpAndEnableWindow, popUp))#Quand l'utilisateur appuie sur la croix rouge de la popUp cela réactive la fenêtre en plus de détruire la popup
         title = "Choississez le réseau à charger"
         titleLabel = tkinter.Label(popUp, text = title, bg="orange")
         titleLabel.pack(side ='top', pady=20)
         networkName = self.GetPreviousNetworks()
         tkVarS = tkinter.StringVar(popUp)
         tkVarS.set(networkName[0])
-        userEntry = tkinter.OptionMenu(popUp, tkVarS, *networkName)
+        userEntry = tkinter.OptionMenu(popUp, tkVarS, *networkName) #Création du bouton à choix multiple
         userEntry.pack(expand = True)
         submit = tkinter.Button(popUp, text = "Valider", command = partial(self.CheckLoadedNetworkAndValidate,popUp, tkVarS))
         submit.pack(side = "right",  padx = 30, pady= (0,50))
@@ -97,6 +101,7 @@ class Interface():
         self.fenetre.wait_window(popUp)
             
     def CheckLoadedNetworkAndValidate(self, popUp, fileName):
+        """Chargement du réseau après que l'utilisateur ait rentré son choix"""
         self.network = reseau.Load_Network(fileName.get())
         self.network.interface = self
         if self.network != None:
@@ -109,6 +114,7 @@ class Interface():
         
     
     def FenetrePopUpSauvegarde(self):
+        """PopUp qui apparait quand l'utilisateur clique sur le bouton sauvegarde"""
         self.fenetre.attributes('-disabled', True)
         popUp = tkinter.Toplevel(self.fenetre)
         popUp.protocol("WM_DELETE_WINDOW", partial(self.DestroyPopUpAndEnableWindow, popUp))
@@ -128,7 +134,7 @@ class Interface():
     def SaveAndFeedback(self, popUp, nameFile):
         reussite =False
         if len(nameFile.get())  != 0: #On s'assure que l'utilisateur a rentré un nom, sinon on refuse la sauvegarde
-            reussite = self.network.Save_Network(nameFile.get())
+            reussite = self.network.Save_Network(nameFile.get()) #On vérifie qu'il n'y a pas eu de problème lors de la sauvegarde du réseau
         
         if reussite == True:
             self.fenetre.attributes('-disabled', False)
@@ -157,7 +163,7 @@ class Interface():
         self.fenetre.resizable(False, False)
         self.fenetre.geometry(str(width)+"x"+str(hight))
         
-        if self.reseauASauvegarder ==True :
+        if self.reseauASauvegarder ==True : #Si l'utilisateur a sn=on réseau non sauvegardé on affiche le bouton de sauvegarde en haut à droite de la chaque page
             buttonSauvegarde = LoadButtonWithImage(self.fenetre, "iconeSauvegarde.png", 37,50, self.bg_color)
             buttonSauvegarde.config(command = self.FenetrePopUpSauvegarde)
             buttonSauvegarde.grid(row = 0, column = n_column, sticky = "e", padx=30)
@@ -174,8 +180,6 @@ class Interface():
         titre.pack()
         questionHiddenLayer.pack()
         ButtonLayer = BoutonPlusMoins(self.fenetre, self.bg_color)
-        
-        #HiddenNumbers = self.CreateEntryForHiddensLayer(int(ButtonLayer.valueDisplayed['text']))
         EpochNumber = NumericalEntry(self.fenetre, "Combien d'épochs voulez vous réaliser?", "int", self.bg_color)
         LearningRate = NumericalEntry(self.fenetre, "Définissez un learning rate", "float", self.bg_color)
         ValidateButton = tkinter.Button(self.fenetre, text = "Valider", command = partial(self.CheckValidation, EpochNumber,ButtonLayer,LearningRate, compteurClick ))
@@ -266,13 +270,13 @@ class Interface():
         self.fenetre.grid_rowconfigure(4, weight=1)
 
     def Statistiques_du_Reseau(self):
-        self.clearPreviousPage(1030,630,2)
+        self.clearPreviousPage(1030,670,2)
         titre = tkinter.Label(self.fenetre, text = "Données sur le réseau", bg = "orange")
         InfoReseau = tkinter.Label(self.fenetre, text = self.network.ToString(), background="#FCEFDF")
         titre.grid(row=0, column =0, columnspan =2)
         InfoReseau.grid(row=1, column =0, columnspan =2, pady=10)
         y = [self.network.train_nb_correct,self.network.test_nb_correct]
-        fig, graph = plotGraph(self.fenetre, "Pourcentage de réussite au cours de l'entraînement", np.swapaxes(y,0,1), ['Training Set', 'Testing set'], self.bg_color)
+        fig, graph = plotGraph(self.fenetre, "Pourcentage de réussite durant l'entraînement", np.swapaxes(y,0,1), ['Training Set', 'Testing set'], self.bg_color)
         graph.grid(row =2,column =0, padx = 20, sticky = "nsew")
         self.ManagePie(self.fenetre)
         returnButton = tkinter.Button(self.fenetre, text = "Retour", command =  self.MenuStatPage)

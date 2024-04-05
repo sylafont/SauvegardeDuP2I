@@ -7,6 +7,7 @@ Created on Fri Mar 15 16:48:33 2024
 import tkinter 
 
 class BoutonPlusMoins():
+    """Création de deux boutons Plus et Moins qui ajoute ou enlève des champs utilisateur"""
     def __init__(self, root, color) :
         self.root= root
         self.color = color
@@ -96,10 +97,10 @@ class NumericalEntry():
                 return int(self.A_entry.get())
     
     def validate_input(self,value):
-        if(self.type == "int") :
+        if(self.type == "int") : #Si le champ n'est sencé que contenir des entiers
             if value.isdigit() or value =="":
                 return True
-        elif(self.type == "float"):
+        elif(self.type == "float"):#Si le champ peut contenir des floats
             try:
                 IsFloat = float(value)
                 return True

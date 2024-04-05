@@ -10,10 +10,12 @@ from PIL import Image, ImageTk
 import numpy as np
 
 def imageUploader(app):
+    """Propose à l'utilisateur de récupérer une image de son ordinateur"""
+    """L'image est redimensionnée"""
     fileTypes = [("Image files", "*.png;*.jpg;*.jpeg")]
     path = filedialog.askopenfilename(filetypes=fileTypes)
  
-    if len(path):
+    if len(path):#Si l'utilisateur a bien sélectionné une image
         print("path : ", path)
         img = Image.open(path)
         width, height = img.size
@@ -28,8 +30,6 @@ def imageUploader(app):
         img = img.resize((width, height))
         pixel_data = ProcessUserImageForNetworkClassification(img)
     
-        print("Dimensions de la matrice de pixels :", np.shape(pixel_data))
-
         pic = ImageTk.PhotoImage(img)
         
         app.geometry("560x320")
@@ -58,7 +58,7 @@ def ProcessMnistImageForDisplay(image):
     return label
 
 def LoadButtonWithImage(root, nameImage, height, width, color):
-
+    """Renvoie un bouton qui a une image affichée dessus"""
     button = Button(root, bg = color)
     image = Image.open("Ressources/" + nameImage)
     image = image.resize((width, height))
